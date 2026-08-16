@@ -1,0 +1,160 @@
+ @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Cormorant+Garamond:wght@400;500&display=swap');
+
+ 
+ body{
+ margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(180deg, #255c52, #4f867a);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .contenedor {
+      background: transparent;
+      text-align: center;
+      width: 300px;
+      color: white;
+    }
+
+    .logo {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      width: 150px;
+      height: 150px;
+      margin: 0 auto 10px auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .logo img {
+      width: 180px;
+    }
+
+    h2 {
+      font-family: "Montserrat", sans-serif;
+      font-size: 30px;
+      margin: 10px 0 -15px;
+    }
+
+    p {
+      font-family: "Cormorant Garamond", sans-serif;
+      font-size: 15px;
+      margin-bottom: 15px;
+    }
+
+    /* === Inputs animados === */
+.input-box {
+  position: relative;
+  width: 100%;
+  margin: 18px 0;
+}
+
+.input-box input {
+  width: 100%;
+  padding: 14px 12px;
+  border: none;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 14px;
+  outline: none;
+}
+
+.input-box label {
+  position: absolute;
+  left: 20px;
+  top: 30%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+  pointer-events: none;
+  transition: 0.25s ease all;
+  background: transparent;
+}
+
+/* === Efecto flotante === */
+.input-box input:focus ~ label,
+.input-box input:not(:placeholder-shown) ~ label {
+  top: -13px;
+  left: 15px;
+  font-size: 12px;
+  color: #ffffff;
+  background: #255c52;
+  padding: 0 6px;
+  border-radius: 12px;
+  transform: none;
+}
+
+    .enlaces {
+      font-family: "Poppins", sans-serif;
+      margin: 10px 0;
+      font-size: 12px;
+    }
+    .enlaces a {
+      font-family: "Poppins", sans-serif;
+      color: white;
+      text-decoration: underline  ;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;  
+      border: none;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-login {
+      background: white;
+      color: #255c52;
+    }
+    .btn-login:hover {
+      background: #e5e5e5;
+    }
+
+    .btn-register {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    .btn-register:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    /* Estilos Registro */
+    .social-icons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 15px 0;
+    }
+    .social-icons img {
+      width: 28px;
+      cursor: pointer;
+    }
+
+    label {
+      font-size: 12px;
+      display: block;
+      text-align: left;
+      margin: 8px 0;
+    }
+    label input {
+      margin-right: 6px;
+      width: auto;
+    }
+
+    .input-box input,
+.btn {
+  width: 100%;
+  box-sizing: border-box;
+}

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>UnderStock</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="contenedor" id="formLogin">
+    <div class="logo">
+      <img src="https://i.ibb.co/2087BnFp/imagen-2025-09-29-093228228.png" alt="Logo UnderStock">
+    </div>
+    <h2>UnderStock</h2>
+    <p>inventario bajo control.</p>
+
+    <div class="input-box">
+      <input type="email" id="correo" name="correo" required placeholder=" " autocomplete="username">
+      <label for="correo">Email</label>
+    </div>
+
+    <div class="input-box">
+      <input type="password" id="clave" name="clave" required placeholder=" " autocomplete="current-password">
+      <label for="clave">Password</label>
+    </div>
+
+    <div class="enlaces">
+      <a onclick="mostrarRecuperar()">Forgot Password?</a>
+    </div>
+
+    <button class="btn btn-login" onclick="iniciarSesion()">Login</button>
+
+    <button class="btn btn-register" type="button" onclick="mostrarRegistro()">Create Account</button>
+  </div>
+
+  <div class="contenedor" id="formRegistro" style="display:none;">
+    <h2>Create Your Account!</h2>
+
+    <div class="input-box">
+      <input type="text" id="nombre" placeholder=" " autocomplete="name" required />
+      <label for="nombre">Full Name</label>
+    </div>
+
+    <div class="input-box">
+      <input type="email" id="correoRegistro" placeholder=" " autocomplete="email" required />
+      <label for="correoRegistro">Email Address</label>
+    </div>
+
+    <div class="input-box">
+      <input type="password" id="claveRegistro" placeholder=" " autocomplete="new-password" required />
+      <label for="claveRegistro">Password</label>
+    </div>
+
+    <div class="input-box">
+      <input type="password" id="claveRegistro2" placeholder=" " autocomplete="new-password" required />
+      <label for="claveRegistro2">Confirm Password</label>
+    </div>
+
+    <div class="auth-buttons-container">
+      <script src="https://accounts.google.com/gsi/client" async defer></script>
+      <div id="g_id_onload"
+         data-client_id="1069274523410-ss5sen47uio3hukjubhct87ppkolajcc.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+         data-type="standard"
+         data-shape="rectangular"
+         data-theme="filled_blue"
+         data-text="signin_with"
+         data-size="large"
+         data-logo_alignment="left">
+      </div>
+    </div>
+
+    <label style="margin: 15px 0; display: block;">
+      <input type="checkbox" id="terminos"> 
+      I agree to the <b>Terms & Privacy</b>
+    </label>
+
+    <button class="btn btn-login" onclick="registrarse()">Sign Up</button>
+
+    <div class="enlaces">
+      <p>Have an account? <a onclick="mostrarLogin()">Sign In</a></p>
+    </div>
+  </div>
+
+  <div class="contenedor" id="formRecuperar" style="display:none;">
+    <h2>Recover Password</h2>
+    <p>Enter your email to receive reset instructions.</p>
+
+    <div class="input-box">
+      <input type="email" id="correoRecuperar" placeholder=" " autocomplete="email" required />
+      <label for="correoRecuperar">Email</label>
+    </div>
+    <button class="btn btn-login" onclick="recuperarClave()">Reset Password</button>
+    <div class="enlaces">
+      <a onclick="mostrarLogin()">Back to Login</a>
+    </div>
+  </div>
+
+  <script>
+    function handleCredentialResponse(response) {
+      const payload = JSON.parse(atob(response.credential.split('.')[1]));
+      localStorage.setItem("nombre", payload.name);
+      localStorage.setItem("correo", payload.email);
+      // Asignamos el token por defecto para que pueda navegar
+      localStorage.setItem("token", "Bearer mi_token_super_seguro_123");
+      // Redirección relativa dentro del proyecto
+      window.location.href = "main.html";
+    }
+
+    function mostrarLogin() {
+      document.getElementById("formLogin").style.display = "block";
+      document.getElementById("formRegistro").style.display = "none";
+      document.getElementById("formRecuperar").style.display = "none";
+    }
+
+    function mostrarRegistro() {
+      document.getElementById("formLogin").style.display = "none";
+      document.getElementById("formRegistro").style.display = "block";
+      document.getElementById("formRecuperar").style.display = "none";
+    }
+
+    function mostrarRecuperar() {
+      document.getElementById("formLogin").style.display = "none";
+      document.getElementById("formRegistro").style.display = "none";
+      document.getElementById("formRecuperar").style.display = "block";
+    }
+
+    async function registrarse() {
+      const nombre = document.getElementById('nombre').value.trim();
+      const correo = document.getElementById('correoRegistro').value.trim();
+      const clave1 = document.getElementById('claveRegistro').value;
+      const clave2 = document.getElementById('claveRegistro2').value;
+      const terminos = document.getElementById('terminos').checked;
+
+      if (!nombre || !correo || !clave1 || !clave2) return alert("Completa todos los campos.");
+      if (!terminos) return alert("Debes aceptar los Términos y Privacidad.");
+      if (clave1 !== clave2) return alert("Las contraseñas no coinciden.");
+      if (clave1.length < 6) return alert("La contraseña debe tener al menos 6 caracteres.");
+
+      const data = new URLSearchParams({
+        nombre: nombre,
+        correoRegistro: correo,
+        claveRegistro: clave1,
+        claveRegistro2: clave2
+      });
+
+      try {
+        // Ruta relativa al archivo PHP de registro
+        const res = await fetch('../../php/registro.php', { method: 'POST', body: data });
+        const texto = await res.text();
+        alert(texto);
+
+        if (texto.includes("SUCCESS:")) {
+          document.querySelectorAll('#formRegistro input').forEach(input => input.value = '');
+          document.getElementById('terminos').checked = false;
+          mostrarLogin();
+        }
+      } catch (error) {
+        alert('Error en el servidor.');
+      }
+    }
+
+    // Iniciar Sesión conectado a la nueva API REST
+    async function iniciarSesion() {
+      const correo = document.getElementById("correo").value.trim();
+      const clave = document.getElementById("clave").value.trim();
+
+      if (!correo || !clave) {
+        alert("Por favor completa los campos.");
+        return;
+      }
+
+      try {
+        // Ruta relativa a la API del proyecto
+        const response = await fetch('../api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ correo, clave })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.status === "SUCCESS") {
+          localStorage.setItem("usuario_nombre", data.data.nombreRegistro);
+          localStorage.setItem("usuario_correo", data.data.correoRegistro);
+          localStorage.setItem("token", "Bearer mi_token_super_seguro_123");
+
+          // Redirección relativa dentro del proyecto
+          window.location.href = "main.html";
+        } else {
+          alert(data.error || "Credenciales incorrectas");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("No se pudo conectar con la API.");
+      }
+    }
+
+    function recuperarClave() {
+      const correo = document.getElementById("correoRecuperar").value.trim();
+      if (!correo) return alert("Ingresa tu correo.");
+      alert("Se enviará un correo a: " + correo);
+      mostrarLogin();
+    }
+  </script>
+</body>
+</html>
