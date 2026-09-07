@@ -84,3 +84,36 @@ ORDER BY valorInventario DESC;
 SELECT
     SUM(precio * cantidad) AS valorTotalInventario
 FROM productos;
+
+SELECT
+
+    idProducto,
+
+    nombre,
+
+    precio,
+
+    cantidad,
+
+    stockMinimo
+
+FROM productos
+
+ORDER BY idProducto DESC;
+
+SELECT
+
+    idProducto,
+
+    nombre,
+
+    precio,
+
+    cantidad
+
+FROM productos
+
+WHERE nombre LIKE '%Mouse%';
+
+
+
