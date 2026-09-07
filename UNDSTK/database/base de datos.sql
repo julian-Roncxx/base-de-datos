@@ -58,3 +58,29 @@ FROM productos;
 
 SELECT SUM(cantidad) AS unidadesDisponibles
 FROM productos;
+
+SELECT
+    idProducto,
+    nombre,
+    cantidad,
+    stockMinimo
+FROM productos
+WHERE cantidad <= stockMinimo;
+
+SELECT
+    nombre,
+    cantidad
+FROM productos
+ORDER BY cantidad DESC;
+
+SELECT
+    nombre,
+    precio,
+    cantidad,
+    (precio * cantidad) AS valorInventario
+FROM productos
+ORDER BY valorInventario DESC;
+
+SELECT
+    SUM(precio * cantidad) AS valorTotalInventario
+FROM productos;
