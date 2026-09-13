@@ -14,6 +14,11 @@ if (!$resultado) {
 
 echo "<h2>Inventario de productos</h2>";
 
+// 🆕 MENSAJE DE ÉXITO AL ACTUALIZAR
+if (isset($_GET['mensaje']) && $_GET['mensaje'] === 'actualizado') {
+    echo "<p style='color: green;'> Producto actualizado correctamente</p>";
+}
+
 if ($resultado->num_rows > 0) {
 
     echo "<table border='1' cellpadding='8'>";
@@ -25,6 +30,7 @@ if ($resultado->num_rows > 0) {
             <th>Cantidad</th>
             <th>Stock mínimo</th>
             <th>Estado</th>
+            <th>Acciones</th>
           </tr>";
 
     while ($producto = $resultado->fetch_assoc()) {
@@ -54,6 +60,11 @@ if ($resultado->num_rows > 0) {
 
         echo "<td>" . $estado . "</td>";
 
+        // 🆕 BOTÓN DE EDITAR
+        echo "<td>
+                <a href='editar.php?id=" . $producto["idProducto"] . "'>✏️ Editar</a>
+              </td>";
+
         echo "</tr>";
     }
 
@@ -67,3 +78,4 @@ if ($resultado->num_rows > 0) {
 $conn->close();
 
 ?>
+
