@@ -17,4 +17,4 @@ Integración mediante APIs: El sistema debe permitir la integración con nuevos 
 el proyecto es suficientemente grande gracias a su capacidad de adaptacion a largo plazo y su facilidad de mejora continua y debdio a sus cambios a nivel de arquitectura consideramos que este proyector es el mas adecuado para trabajar debido a que se encuentra atraves de microservicios 
 
 
-el uso de IA se realizara con fines de organizacion a nivel de copdigo y docuemntacion de este mismo , usaremos iA como deepseek , claude entre otras.
+el uso de IA se realizara con fines de organizacion a nivel de codigo y docuemntacion de este mismo , usaremos iA como deepseek , claude entre otras.
