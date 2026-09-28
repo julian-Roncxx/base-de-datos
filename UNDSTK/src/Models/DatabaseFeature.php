@@ -70,20 +70,23 @@ class DatabaseFeature
 
         // TRANSACCIONES REALIZADAS
 
-        $ventas =
-            $this->db->query("
-                SELECT
-                    id,
-                    total,
-                    fecha
+      $transacciones =
+    $this->db->query("
+        SELECT
+            idTransaccion,
+            ventaId,
+            operacion,
+            estado,
+            mensaje,
+            fecha
 
-                FROM ventas
+        FROM vw_transacciones
 
-                ORDER BY fecha DESC
+        ORDER BY fecha DESC
 
-                LIMIT 10
-            ")
-            ->fetchAll(PDO::FETCH_ASSOC);
+        LIMIT 20
+    ")
+    ->fetchAll(PDO::FETCH_ASSOC);
 
 
         return [
@@ -98,7 +101,7 @@ class DatabaseFeature
                 $categorias,
 
             'transacciones' =>
-                $ventas
+                $transacciones
 
         ];
     }

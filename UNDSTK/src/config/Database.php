@@ -1,41 +1,61 @@
 <?php
+
 namespace Config;
+
 use PDO;
 use PDOException;
 
-class Database {
+class Database
+{
     private static $instance = null;
     private $connection;
 
-    // Configuración para XAMPP
-// Configuración para Clever Cloud
-    private $host = 'blzgdilpfnglyxk8uzat-mysql.services.clever-cloud.com';
-    private $db_name = 'blzgdilpfnglyxk8uzat';
-    private $username = 'uwnusqatkvl0xxkd';
-    private $password = 'hEnacqHdKIWGLEzKVv6p'; // Dale clic al candado amarillo en Clever Cloud para verla
+    private $host = '127.0.0.1';
+    private $db_name = 'understock';
+    private $username = 'root';
+    private $password = '';
     private $port = '3306';
 
-    private function __construct() {
+    private function __construct()
+    {
         try {
+
             $this->connection = new PDO(
-                "mysql:host={$this->host};port={$this->port};dbname={$this->db_name};charset=utf8",
+                "mysql:host={$this->host};port={$this->port};dbname={$this->db_name};charset=utf8mb4",
                 $this->username,
                 $this->password
             );
-            $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch(PDOException $e) {
-            die("Error de conexión: " . $e->getMessage());
+
+            $this->connection->setAttribute(
+                PDO::ATTR_ERRMODE,
+                PDO::ERRMODE_EXCEPTION
+            );
+
+            $this->connection->setAttribute(
+                PDO::ATTR_DEFAULT_FETCH_MODE,
+                PDO::FETCH_ASSOC
+            );
+
+        } catch (PDOException $e) {
+
+            die(
+                "Error de conexión con la base de datos: "
+                . $e->getMessage()
+            );
         }
     }
 
-    public static function getInstance() {
-        if (self::$instance == null) {
+    public static function getInstance()
+    {
+        if (self::$instance === null) {
             self::$instance = new Database();
         }
+
         return self::$instance;
     }
 
-    public function getConnection() {
+    public function getConnection()
+    {
         return $this->connection;
     }
 }
