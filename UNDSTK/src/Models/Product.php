@@ -1,50 +1,116 @@
 <?php
+
 namespace Models;
 
 use Config\Database;
 use PDO;
 
-class Product {
+class Product
+{
     private $db;
 
-    public function __construct() {
-        // Obtenemos la conexión única (Singleton)
+    public function __construct()
+    {
         $this->db = Database::getInstance()->getConnection();
     }
 
-    // GET: Obtener todos los productos
-    public function getAll() {
-        $stmt = $this->db->query("SELECT * FROM productos");
+
+    public function getAll()
+    {
+        $sql = "
+            SELECT
+                id,
+                nombre,
+                categoria,
+                precio,
+                cantidad,
+                stockMinimo,
+                estado,
+                valorInventario
+            FROM vw_inventario
+            ORDER BY nombre
+        ";
+
+        $stmt = $this->db->query($sql);
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // POST: Crear un nuevo producto
-    public function create($nombre, $cantidad, $precio) {
-        $stmt = $this->db->prepare("INSERT INTO productos (nombre, cantidad, precio) VALUES (:nombre, :cantidad, :precio)");
-        $stmt->bindParam(':nombre', $nombre);
-        $stmt->bindParam(':cantidad', $cantidad);
-        $stmt->bindParam(':precio', $precio);
-        return $stmt->execute();
+
+    public function create($nombre, $cantidad, $precio)
+    {
+        $sql = "
+            INSERT INTO productos
+            (
+                nombre,
+                cantidad,
+                precio,
+                idCategoria
+            )
+
+            SELECT
+                :nombre,
+                :cantidad,
+                :precio,
+                idCategoria
+
+            FROM categorias
+
+            WHERE nombre = 'Sin categoría'
+
+            LIMIT 1
+        ";
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute([
+            'nombre' => $nombre,
+            'cantidad' => $cantidad,
+            'precio' => $precio
+        ]);
     }
 
-    // PUT: Actualizar un producto
-    public function update($id, $nombre, $cantidad, $precio) {
-        $sql = "UPDATE productos SET nombre = :nombre, cantidad = :cantidad, precio = :precio WHERE id = :id";
+
+    public function update(
+        $id,
+        $nombre,
+        $cantidad,
+        $precio
+    ) {
+
+        $sql = "
+            UPDATE productos
+
+            SET
+                nombre = :nombre,
+                cantidad = :cantidad,
+                precio = :precio
+
+            WHERE idProducto = :id
+        ";
+
         $stmt = $this->db->prepare($sql);
-        
-        $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':nombre', $nombre);
-        $stmt->bindParam(':cantidad', $cantidad);
-        $stmt->bindParam(':precio', $precio);
-        
-        return $stmt->execute();
+
+        return $stmt->execute([
+            'id' => $id,
+            'nombre' => $nombre,
+            'cantidad' => $cantidad,
+            'precio' => $precio
+        ]);
     }
 
-    // DELETE: Eliminar un producto
-    public function delete($id) {
-        $sql = "DELETE FROM productos WHERE id = :id";
+
+    public function delete($id)
+    {
+        $sql = "
+            DELETE FROM productos
+            WHERE idProducto = :id
+        ";
+
         $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':id', $id);
-        return $stmt->execute();
+
+        return $stmt->execute([
+            'id' => $id
+        ]);
     }
 }

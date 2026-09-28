@@ -1,4 +1,4 @@
-ñ<?php
+<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -30,6 +30,8 @@ use Models\Product;
 use Models\Sale;
 use Controllers\FinanceController;
 use Models\Finance;
+use Controllers\DatabaseFeatureController;
+use Models\DatabaseFeature;
 use Middleware\AuthMiddleware;
 
 // 2. Obtener la URL solicitada
@@ -102,6 +104,26 @@ $router->add('GET', '/api/finance', function() {
     $controller = new FinanceController($financeModel);
     $controller->index();
 });
+// --- DEMOSTRACIÓN DE BASE DE DATOS ---
+
+$router->add(
+    'GET',
+    '/api/database-features',
+    function() {
+
+        AuthMiddleware::verify();
+
+        $model =
+            new DatabaseFeature();
+
+        $controller =
+            new DatabaseFeatureController(
+                $model
+            );
+
+        $controller->index();
+    }
+);
 
 // Despachar la petición
 $router->dispatch($method, $url);

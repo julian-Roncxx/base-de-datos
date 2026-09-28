@@ -39,6 +39,7 @@
       <a href="#" id="link-ventas" onclick="showSection('ventas')">🧾 Ventas</a>
       <a href="#" id="link-proveedores" onclick="showSection('proveedores')">👥 Proveedores</a>
       <a href="#" id="link-finanzas" onclick="showSection('finanzas')">💰 Finanzas</a>
+      <a href="#" id="link-bd" onclick="showSection('bd')"> 🗄️ Base de Datos </a>
       <a href="#" id="link-config" onclick="showSection('config')">⚙️ Configuración</a>
     </nav>
     <button class="logout-btn" onclick="cerrarSesion()">🚪 Cerrar sesión</button>
@@ -172,6 +173,291 @@
           </div>
       </div>
     </section>
+<section id="bd" class="panel">
+
+    <h2>
+        Características de Base de Datos
+    </h2>
+
+    <p>
+        Evidencia del uso de normalización,
+        vistas, triggers y transacciones
+        dentro de UnderStock.
+    </p>
+
+
+    <div
+        style="
+            display:grid;
+            grid-template-columns:
+            repeat(auto-fit,minmax(200px,1fr));
+            gap:15px;
+            margin:20px 0;
+        "
+    >
+
+        <div class="card">
+
+            <h3>
+                🧩 Normalización
+            </h3>
+
+            <p>
+                Productos relacionados
+                con categorías mediante
+                claves foráneas.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>
+                👁️ Vista SQL
+            </h3>
+
+            <p>
+                El inventario se obtiene
+                desde vw_inventario.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>
+                ⚡ Trigger
+            </h3>
+
+            <p>
+                Los cambios de stock
+                generan movimientos
+                automáticamente.
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>
+                🔄 Transacción
+            </h3>
+
+            <p>
+                Las ventas utilizan
+                COMMIT y ROLLBACK.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <h3>
+        Normalización - Categorías
+    </h3>
+
+    <div
+        style="overflow-x:auto;"
+    >
+
+        <table class="prov-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Categoría</th>
+
+                    <th>
+                        Productos
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody
+                id="bd-categorias"
+            >
+
+                <tr>
+
+                    <td colspan="3">
+                        Cargando...
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <h3
+        style="margin-top:30px;"
+    >
+        Vista SQL - Inventario
+    </h3>
+
+
+    <div
+        style="overflow-x:auto;"
+    >
+
+        <table class="prov-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Producto</th>
+
+                    <th>Categoría</th>
+
+                    <th>Stock</th>
+
+                    <th>Mínimo</th>
+
+                    <th>Estado</th>
+
+                    <th>
+                        Valor inventario
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody
+                id="bd-inventario"
+            >
+
+                <tr>
+
+                    <td colspan="6">
+                        Cargando...
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <h3
+        style="margin-top:30px;"
+    >
+        Trigger - Movimientos de Stock
+    </h3>
+
+
+    <div
+        style="overflow-x:auto;"
+    >
+
+        <table class="prov-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Fecha</th>
+
+                    <th>Producto</th>
+
+                    <th>Tipo</th>
+
+                    <th>Cantidad</th>
+
+                    <th>Anterior</th>
+
+                    <th>Nuevo</th>
+
+                    <th>Motivo</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody
+                id="bd-movimientos"
+            >
+
+                <tr>
+
+                    <td colspan="7">
+                        Sin movimientos
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <h3
+        style="margin-top:30px;"
+    >
+        Transacciones - Ventas
+    </h3>
+
+
+    <div
+        style="overflow-x:auto;"
+    >
+
+        <table class="prov-table">
+
+            <thead>
+
+                <tr>
+
+                   <th>ID</th>
+<th>Fecha</th>
+<th>Operación</th>
+<th>Estado</th>
+<th>Mensaje</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody
+                id="bd-transacciones"
+            >
+
+                <tr>
+
+                    <td colspan="5">
+                        Sin transacciones
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
 
     <section id="config" class="panel">
       <h2>Configuración</h2>
@@ -236,6 +522,7 @@
         if (sectionId === 'ventas') { cargarProductosPOS(); }
         if (sectionId === 'proveedores') { cargarProveedores(); }
         if (sectionId === 'finanzas') { cargarDatosFinancieros(); }
+        if (sectionId === 'bd') { cargarBaseDatos(); }
     }
 
     // --- ACCIONES DE INVENTARIO ---
@@ -522,10 +809,419 @@
         finally { btn.textContent = "💸 Procesar Venta"; btn.disabled = false; }
     }
 
+    // ==========================================
+// PANEL DE CARACTERÍSTICAS DE BASE DE DATOS
+// ==========================================
+
+function escaparHTML(valor) {
+
+    return String(valor ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+function moneda(valor) {
+
+    const numero =
+        Number(valor || 0);
+
+    return new Intl.NumberFormat(
+        "es-CO",
+        {
+            style: "currency",
+            currency: "COP",
+            maximumFractionDigits: 0
+        }
+    ).format(numero);
+}
+
+
+async function cargarBaseDatos() {
+
+    const categorias =
+        document.getElementById(
+            "bd-categorias"
+        );
+
+    const inventario =
+        document.getElementById(
+            "bd-inventario"
+        );
+
+    const movimientos =
+        document.getElementById(
+            "bd-movimientos"
+        );
+
+    const transacciones =
+        document.getElementById(
+            "bd-transacciones"
+        );
+
+
+    try {
+
+        const respuesta =
+            await fetch(
+                '../api/database-features',
+                {
+                    method: 'GET',
+
+                    headers: {
+
+                        'Authorization':
+                            token,
+
+                        'Content-Type':
+                            'application/json'
+                    }
+                }
+            );
+
+
+        if (
+            respuesta.status === 401
+        ) {
+
+            cerrarSesion();
+
+            return;
+        }
+
+
+        const resultado =
+            await respuesta.json();
+
+
+        if (
+            resultado.status
+            !== "SUCCESS"
+        ) {
+
+            throw new Error(
+                resultado.message
+            );
+        }
+
+
+        const datos =
+            resultado.data;
+
+
+        // ==================================
+        // NORMALIZACIÓN
+        // ==================================
+
+        if (
+            datos.categorias.length === 0
+        ) {
+
+            categorias.innerHTML =
+                `
+                <tr>
+                    <td colspan="3">
+                        No hay categorías.
+                    </td>
+                </tr>
+                `;
+
+        } else {
+
+            categorias.innerHTML =
+                datos.categorias
+                .map(c => `
+
+                    <tr>
+
+                        <td>
+                            ${c.idCategoria}
+                        </td>
+
+                        <td>
+                            ${escaparHTML(
+                                c.categoria
+                            )}
+                        </td>
+
+                        <td>
+                            ${c.totalProductos}
+                        </td>
+
+                    </tr>
+
+                `)
+                .join('');
+        }
+
+
+        // ==================================
+        // VISTA SQL
+        // ==================================
+
+        if (
+            datos.inventario.length === 0
+        ) {
+
+            inventario.innerHTML =
+                `
+                <tr>
+                    <td colspan="6">
+                        Sin productos.
+                    </td>
+                </tr>
+                `;
+
+        } else {
+
+            inventario.innerHTML =
+                datos.inventario
+                .map(p => `
+
+                    <tr>
+
+                        <td>
+                            ${escaparHTML(
+                                p.nombre
+                            )}
+                        </td>
+
+                        <td>
+                            ${escaparHTML(
+                                p.categoria
+                            )}
+                        </td>
+
+                        <td>
+                            ${p.cantidad}
+                        </td>
+
+                        <td>
+                            ${p.stockMinimo}
+                        </td>
+
+                        <td>
+                            <strong>
+                                ${escaparHTML(
+                                    p.estado
+                                )}
+                            </strong>
+                        </td>
+
+                        <td>
+                            ${moneda(
+                                p.valorInventario
+                            )}
+                        </td>
+
+                    </tr>
+
+                `)
+                .join('');
+        }
+
+
+        // ==================================
+        // TRIGGERS
+        // ==================================
+
+        if (
+            datos.movimientos.length === 0
+        ) {
+
+            movimientos.innerHTML =
+                `
+                <tr>
+                    <td colspan="7">
+                        Todavía no hay
+                        movimientos.
+                    </td>
+                </tr>
+                `;
+
+        } else {
+
+            movimientos.innerHTML =
+                datos.movimientos
+                .map(m => `
+
+                    <tr>
+
+                        <td>
+                            ${escaparHTML(
+                                m.fecha
+                            )}
+                        </td>
+
+                        <td>
+                            ${escaparHTML(
+                                m.producto
+                            )}
+                        </td>
+
+                        <td>
+                            <strong>
+                                ${escaparHTML(
+                                    m.tipo
+                                )}
+                            </strong>
+                        </td>
+
+                        <td>
+                            ${m.cantidad}
+                        </td>
+
+                        <td>
+                            ${m.stockAnterior}
+                        </td>
+
+                        <td>
+                            ${m.stockNuevo}
+                        </td>
+
+                        <td>
+                            ${escaparHTML(
+                                m.motivo
+                            )}
+                        </td>
+
+                    </tr>
+
+                `)
+                .join('');
+        }
+
+
+        // ==================================
+        // TRANSACCIONES
+        // ==================================
+// ==================================
+// TRANSACCIONES
+// ==================================
+
+if (
+    datos.transacciones.length === 0
+) {
+
+    transacciones.innerHTML = `
+        <tr>
+            <td colspan="5">
+                Todavía no hay
+                transacciones registradas.
+            </td>
+        </tr>
+    `;
+
+} else {
+
+    transacciones.innerHTML =
+        datos.transacciones
+        .map(t => {
+
+            const estado =
+                t.estado === "COMMIT"
+                ? "✅ COMMIT"
+                : "↩️ ROLLBACK";
+
+            return `
+
+                <tr>
+
+                    <td>
+                        #${t.idTransaccion}
+                    </td>
+
+                    <td>
+                        ${escaparHTML(
+                            t.fecha
+                        )}
+                    </td>
+
+                    <td>
+                        ${escaparHTML(
+                            t.operacion
+                        )}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ${estado}
+                        </strong>
+                    </td>
+
+                    <td>
+                        ${escaparHTML(
+                            t.mensaje
+                        )}
+                    </td>
+
+                </tr>
+
+            `;
+
+        })
+        .join('');
+}
+
+    } catch (error) {
+
+        console.error(
+            "Error BD:",
+            error
+        );
+
+
+        categorias.innerHTML =
+            `
+            <tr>
+                <td colspan="3">
+                    Error cargando datos.
+                </td>
+            </tr>
+            `;
+
+
+        inventario.innerHTML =
+            `
+            <tr>
+                <td colspan="6">
+                    Error cargando vista.
+                </td>
+            </tr>
+            `;
+
+
+        movimientos.innerHTML =
+            `
+            <tr>
+                <td colspan="7">
+                    Error cargando
+                    movimientos.
+                </td>
+            </tr>
+            `;
+
+
+        transacciones.innerHTML =
+            `
+            <tr>
+                <td colspan="5">
+                    Error cargando
+                    transacciones.
+                </td>
+            </tr>
+            `;
+    }
+}
+
     function cerrarSesion() {
         localStorage.clear(); 
         window.location.replace("login.html"); 
     }
+
   </script>
 </body>
 </html>
