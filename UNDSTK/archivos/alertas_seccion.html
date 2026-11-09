@@ -1,0 +1,39 @@
+<section id="alertas" class="panel understock-alerts" data-api="../api/alerts" aria-label="Centro de Alertas Inteligentes">
+  <div class="ua-page-title">
+    <div class="ua-heading-group">
+      <div class="ua-title-icon" aria-hidden="true">🔔</div>
+      <div>
+        <h2>Centro de Alertas Inteligentes</h2>
+        <p>Monitoreo de inventario con MongoDB <span class="ua-dot" aria-hidden="true"></span></p>
+      </div>
+    </div>
+    <button class="ua-btn ua-btn-primary" type="button" data-ua-sync>
+      <span aria-hidden="true">↻</span> Sincronizar inventario
+    </button>
+  </div>
+
+  <div class="ua-kpis" aria-label="Resumen de alertas">
+    <div class="ua-kpi ua-kpi-danger"><span class="ua-kpi-icon" aria-hidden="true">!</span><div><p>Críticas</p><strong data-ua-critical>0</strong></div></div>
+    <div class="ua-kpi ua-kpi-warning"><span class="ua-kpi-icon" aria-hidden="true">◷</span><div><p>Pendientes</p><strong data-ua-pending>0</strong></div></div>
+    <div class="ua-kpi ua-kpi-success"><span class="ua-kpi-icon" aria-hidden="true">✓</span><div><p>Atendidas</p><strong data-ua-attended>0</strong></div></div>
+  </div>
+
+  <div class="ua-panel">
+    <div class="ua-panel-header">
+      <div><h3>Alertas de inventario</h3><p>Productos que requieren atención según sus niveles de stock.</p></div>
+      <div class="ua-filters" role="group" aria-label="Filtrar alertas">
+        <button type="button" class="ua-filter is-active" data-ua-filter="todas">Todas <span data-ua-all-count>0</span></button>
+        <button type="button" class="ua-filter" data-ua-filter="criticas">Críticas <span data-ua-critical-count>0</span></button>
+        <button type="button" class="ua-filter" data-ua-filter="pendientes">Pendientes <span data-ua-pending-count>0</span></button>
+      </div>
+    </div>
+    <div class="ua-table-scroll">
+      <table class="ua-table">
+        <thead><tr><th>Producto</th><th>Stock actual</th><th>Stock mínimo</th><th>Prioridad</th><th>Reposición sugerida</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody data-ua-rows><tr><td colspan="7" class="ua-empty">Cargando alertas…</td></tr></tbody>
+      </table>
+    </div>
+    <p class="ua-message" data-ua-message role="status" aria-live="polite"></p>
+    <p class="ua-footnote">Fuente: colección <code>understock.productos</code> en MongoDB. Las ventas de MySQL no actualizan esta copia automáticamente.</p>
+  </div>
+</section>

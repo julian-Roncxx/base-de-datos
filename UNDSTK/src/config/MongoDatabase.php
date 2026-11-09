@@ -36,8 +36,11 @@ class MongoDatabase
         return self::cliente()->selectCollection('understock', 'alertas_inventario');
     }
 
-    public static function productos()
-    {
-        return self::cliente()->selectCollection('understock', 'productos');
-    }
+public static function productos()
+{
+    return self::cliente()->selectCollection(
+        'understock',
+        'productos_mysql'
+    );
+}
 }

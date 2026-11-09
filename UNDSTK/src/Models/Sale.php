@@ -4,384 +4,151 @@ namespace Models;
 
 use Config\Database;
 use PDO;
+use Services\MongoProductSyncService;
 use Throwable;
+use RuntimeException;
 
 class Sale
 {
-    private $db;
-
+    private PDO $db;
+    private string $mongoSyncStatus = 'PENDIENTE';
 
     public function __construct()
     {
-        $this->db =
-            Database::getInstance()
-            ->getConnection();
+        $this->db = Database::getInstance()->getConnection();
     }
 
+    public function getMongoSyncStatus(): string
+    {
+        return $this->mongoSyncStatus;
+    }
 
-    private function registrarAuditoria(
-        $ventaId,
-        $estado,
-        $mensaje
-    ) {
-
+    private function registrarAuditoria(?int $ventaId, string $estado, string $mensaje): void
+    {
         try {
-
-            $stmt =
-                $this->db->prepare("
-                    INSERT INTO auditoria_transacciones
-                    (
-                        ventaId,
-                        operacion,
-                        estado,
-                        mensaje
-                    )
-
-                    VALUES
-                    (
-                        :ventaId,
-                        'VENTA',
-                        :estado,
-                        :mensaje
-                    )
-                ");
-
-
+            $stmt = $this->db->prepare(
+                "INSERT INTO auditoria_transacciones (ventaId, operacion, estado, mensaje)
+                 VALUES (:ventaId, 'VENTA', :estado, :mensaje)"
+            );
             $stmt->execute([
-
-                'ventaId' =>
-                    $ventaId,
-
-                'estado' =>
-                    $estado,
-
-                'mensaje' =>
-                    $mensaje
-
+                'ventaId' => $ventaId,
+                'estado' => $estado,
+                'mensaje' => $mensaje
             ]);
-
         } catch (Throwable $e) {
-
-            // La auditoría no debe
-            // afectar la venta principal.
-
+            error_log('Auditoría de venta: ' . $e->getMessage());
         }
     }
 
-
-    public function createSale(
-        $totalCliente,
-        $items
-    ) {
-
+    /**
+     * Conserva el contrato existente: true si MySQL confirmó la venta;
+     * string con el error si se revirtió. MongoDB no provoca un rollback falso.
+     */
+    public function createSale($totalCliente, $items)
+    {
         $ventaId = null;
-
+        $pedidos = [];
+        $this->mongoSyncStatus = 'PENDIENTE';
 
         try {
-
-            if (
-                !is_array($items) ||
-                empty($items)
-            ) {
-
-                throw new \Exception(
-                    "La venta no contiene productos."
-                );
+            if (!is_array($items) || count($items) === 0) {
+                throw new RuntimeException('La venta no contiene productos.');
+            }
+            // Agrupar IDs repetidos en el carrito para no vender más stock del disponible.
+            foreach ($items as $item) {
+                $id = (int) ($item['id'] ?? 0);
+                $cantidad = (int) ($item['cantidad'] ?? 0);
+                if ($id <= 0 || $cantidad <= 0) {
+                    throw new RuntimeException('Producto o cantidad inválida.');
+                }
+                $pedidos[$id] = ($pedidos[$id] ?? 0) + $cantidad;
             }
 
-
             $this->db->beginTransaction();
+            $this->db->exec("SET @motivo_movimiento = 'Venta POS'");
 
-
-            $this->db->exec(
-                "SET @motivo_movimiento = 'Venta POS'"
+            $consultar = $this->db->prepare(
+                'SELECT idProducto, nombre, precio, cantidad
+                 FROM productos WHERE idProducto = :id FOR UPDATE'
             );
-
-
             $productosVenta = [];
+            $totalCalculado = 0.0;
 
-            $totalCalculado = 0;
-
-
-            $stmtProducto =
-                $this->db->prepare("
-                    SELECT
-                        idProducto,
-                        nombre,
-                        precio,
-                        cantidad
-
-                    FROM productos
-
-                    WHERE idProducto = :id
-
-                    FOR UPDATE
-                ");
-
-
-            foreach ($items as $item) {
-
-                $idProducto =
-                    intval(
-                        $item['id'] ?? 0
-                    );
-
-
-                $cantidad =
-                    intval(
-                        $item['cantidad'] ?? 0
-                    );
-
-
-                if (
-                    $idProducto <= 0 ||
-                    $cantidad <= 0
-                ) {
-
-                    throw new \Exception(
-                        "Producto o cantidad inválida."
-                    );
-                }
-
-
-                $stmtProducto->execute([
-
-                    'id' =>
-                        $idProducto
-
-                ]);
-
-
-                $producto =
-                    $stmtProducto->fetch(
-                        PDO::FETCH_ASSOC
-                    );
-
-
+            foreach ($pedidos as $id => $cantidad) {
+                $consultar->execute(['id' => $id]);
+                $producto = $consultar->fetch(PDO::FETCH_ASSOC);
                 if (!$producto) {
-
-                    throw new \Exception(
-                        "Producto no encontrado."
-                    );
+                    throw new RuntimeException("Producto #{$id} no encontrado.");
                 }
-
-
-                if (
-                    intval(
-                        $producto['cantidad']
-                    ) < $cantidad
-                ) {
-
-                    throw new \Exception(
-                        "Stock insuficiente para "
-                        . $producto['nombre']
-                    );
+                if ((int) $producto['cantidad'] < $cantidad) {
+                    throw new RuntimeException('Stock insuficiente para ' . $producto['nombre']);
                 }
-
-
-                $precio =
-                    floatval(
-                        $producto['precio']
-                    );
-
-
-                $totalCalculado +=
-                    $precio * $cantidad;
-
-
+                $precio = (float) $producto['precio'];
+                $totalCalculado += $precio * $cantidad;
                 $productosVenta[] = [
-
-                    'id' =>
-                        $idProducto,
-
-                    'cantidad' =>
-                        $cantidad,
-
-                    'precio' =>
-                        $precio
-
+                    'id' => $id,
+                    'cantidad' => $cantidad,
+                    'precio' => $precio
                 ];
             }
 
-
-            $totalCalculado =
-                round(
-                    $totalCalculado,
-                    2
-                );
-
-
-            if (
-                abs(
-                    floatval($totalCliente)
-                    -
-                    $totalCalculado
-                ) > 0.01
-            ) {
-
-                throw new \Exception(
-                    "El total enviado no coincide con el total calculado."
-                );
+            $totalCalculado = round($totalCalculado, 2);
+            if (!is_numeric($totalCliente) || abs((float) $totalCliente - $totalCalculado) > 0.01) {
+                throw new RuntimeException('El total enviado no coincide con el calculado.');
             }
 
+            $stmtVenta = $this->db->prepare('INSERT INTO ventas (total) VALUES (:total)');
+            $stmtVenta->execute(['total' => $totalCalculado]);
+            $ventaId = (int) $this->db->lastInsertId();
 
-            $stmtVenta =
-                $this->db->prepare("
-                    INSERT INTO ventas
-                    (total)
+            $detalle = $this->db->prepare(
+                'INSERT INTO detalles_venta (venta_id, producto_id, cantidad, precio_unitario)
+                 VALUES (:venta, :producto, :cantidad, :precio)'
+            );
+            $descontar = $this->db->prepare(
+                'UPDATE productos SET cantidad = cantidad - :cantidad
+                 WHERE idProducto = :producto AND cantidad >= :cantidad_minima'
+            );
 
-                    VALUES
-                    (:total)
-                ");
-
-
-            $stmtVenta->execute([
-
-                'total' =>
-                    $totalCalculado
-
-            ]);
-
-
-            $ventaId =
-                intval(
-                    $this->db
-                    ->lastInsertId()
-                );
-
-
-            $stmtDetalle =
-                $this->db->prepare("
-                    INSERT INTO detalles_venta
-                    (
-                        venta_id,
-                        producto_id,
-                        cantidad,
-                        precio_unitario
-                    )
-
-                    VALUES
-                    (
-                        :venta,
-                        :producto,
-                        :cantidad,
-                        :precio
-                    )
-                ");
-
-
-            $stmtStock =
-                $this->db->prepare("
-                    UPDATE productos
-
-                    SET cantidad =
-                        cantidad - :cantidad
-
-                    WHERE idProducto =
-                        :producto
-                ");
-
-
-            foreach (
-                $productosVenta
-                as $producto
-            ) {
-
-                $stmtDetalle->execute([
-
-                    'venta' =>
-                        $ventaId,
-
-                    'producto' =>
-                        $producto['id'],
-
-                    'cantidad' =>
-                        $producto['cantidad'],
-
-                    'precio' =>
-                        $producto['precio']
-
+            foreach ($productosVenta as $producto) {
+                $detalle->execute([
+                    'venta' => $ventaId,
+                    'producto' => $producto['id'],
+                    'cantidad' => $producto['cantidad'],
+                    'precio' => $producto['precio']
                 ]);
-
-
-                $stmtStock->execute([
-
-                    'cantidad' =>
-                        $producto['cantidad'],
-
-                    'producto' =>
-                        $producto['id']
-
+                $descontar->execute([
+                    'cantidad' => $producto['cantidad'],
+                    'producto' => $producto['id'],
+                    'cantidad_minima' => $producto['cantidad']
                 ]);
-
-
-                if (
-                    $stmtStock->rowCount()
-                    !== 1
-                ) {
-
-                    throw new \Exception(
-                        "No fue posible actualizar el inventario."
-                    );
+                if ($descontar->rowCount() !== 1) {
+                    throw new RuntimeException('No fue posible descontar el inventario.');
                 }
             }
 
-
             $this->db->commit();
+            try {
+                $this->db->exec('SET @motivo_movimiento = NULL');
+            } catch (Throwable $e) {
+                error_log('Limpiar motivo movimiento: ' . $e->getMessage());
+            }
 
+            $this->registrarAuditoria($ventaId, 'COMMIT', "Venta #{$ventaId} procesada correctamente.");
 
-            $this->db->exec(
-                "SET @motivo_movimiento = NULL"
-            );
-
-
-            $this->registrarAuditoria(
-
-                $ventaId,
-
-                'COMMIT',
-
-                "Venta #$ventaId procesada correctamente."
-
-            );
-
-
+            // Se ejecuta DESPUÉS del COMMIT. Si Mongo falla, la venta sigue siendo válida.
+            $sync = MongoProductSyncService::intentarSincronizarIds(array_keys($pedidos));
+            $this->mongoSyncStatus = $sync['estado'];
             return true;
-
-
         } catch (Throwable $e) {
-
-
-            if (
-                $this->db->inTransaction()
-            ) {
-
+            if ($this->db->inTransaction()) {
                 $this->db->rollBack();
             }
-
-
             try {
-
-                $this->db->exec(
-                    "SET @motivo_movimiento = NULL"
-                );
-
+                $this->db->exec('SET @motivo_movimiento = NULL');
             } catch (Throwable $ignored) {
-
             }
-
-
-            $this->registrarAuditoria(
-
-                null,
-
-                'ROLLBACK',
-
-                $e->getMessage()
-
-            );
-
-
+            $this->registrarAuditoria(null, 'ROLLBACK', $e->getMessage());
             return $e->getMessage();
         }
     }

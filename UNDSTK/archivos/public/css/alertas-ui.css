@@ -1,0 +1,112 @@
+/* UNDERSTOCK · módulo MongoDB. Selectores aislados para no alterar otras vistas. */
+.understock-alerts, .understock-alerts * { box-sizing: border-box; }
+.understock-alerts {
+  --ua-ink:#12213f; --ua-muted:#6b7890; --ua-line:#e5eaf2; --ua-blue:#2865f2;
+  --ua-blue-dark:#154cd2; --ua-surface:#ffffff; --ua-shadow:0 12px 30px rgba(32,69,125,.09);
+  color:var(--ua-ink); font-family:Inter,"Segoe UI",system-ui,-apple-system,sans-serif;
+  padding: clamp(12px,2vw,26px); border-radius:18px;
+  background:radial-gradient(circle at 85% 6%,#d7e6ff 0,transparent 43%),#f4f7fd;
+  min-height:620px;
+}
+.understock-alerts h2,.understock-alerts h3,.understock-alerts p { margin:0; }
+.understock-alerts .ua-page-title { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:18px; margin-bottom:26px; }
+.understock-alerts .ua-heading-group { display:flex; align-items:center; gap:15px; min-width:0; }
+.understock-alerts .ua-title-icon { display:grid;place-items:center; flex:none; width:66px;height:66px; border-radius:18px; font-size:33px;color:#1847a2; background:#deebff; }
+.understock-alerts .ua-heading-group h2 { font-size:clamp(23px,2.4vw,35px); font-weight:790; letter-spacing:-.045em; line-height:1.12; color:#101e3a; }
+.understock-alerts .ua-heading-group p { margin-top:8px;color:var(--ua-muted);font-size:15px; }
+.understock-alerts .ua-dot { display:inline-block;width:10px;height:10px;background:#23b36f;border-radius:50%;vertical-align:middle;margin-left:5px; }
+.understock-alerts .ua-btn,.understock-alerts .ua-filter { font:inherit; cursor:pointer; border-radius:11px; font-weight:650; transition:background .15s,border-color .15s,transform .15s; }
+.understock-alerts .ua-btn:disabled { opacity:.6; cursor:wait; }
+.understock-alerts .ua-btn-primary { background:linear-gradient(135deg,#398cff,#194eec); color:white; border:1px solid #2f73fb; box-shadow:0 6px 18px rgba(39,97,239,.20); padding:15px 20px;white-space:nowrap; }
+.understock-alerts .ua-btn-primary:hover:not(:disabled) { background:linear-gradient(135deg,#307cef,#133ac1); }
+.understock-alerts .ua-btn-primary span { font-size:23px;line-height:0;vertical-align:-2px;margin-right:5px; }
+.understock-alerts .ua-kpis { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px;margin-bottom:24px; }
+.understock-alerts .ua-kpi { display:flex;align-items:center;gap:20px;min-height:130px;padding:22px 24px;border-radius:15px;box-shadow:var(--ua-shadow);border:1px solid var(--ua-line);border-left:4px solid currentColor; }
+.understock-alerts .ua-kpi-danger { background:linear-gradient(115deg,#fff5f5,#fdf1f3);color:#e83a46; }
+.understock-alerts .ua-kpi-warning { background:linear-gradient(115deg,#fffaf0,#fff8ea);color:#eca321; }
+.understock-alerts .ua-kpi-success { background:linear-gradient(115deg,#f0fff8,#ebfbf7);color:#16b96d; }
+.understock-alerts .ua-kpi-icon { display:grid;place-items:center;border-radius:16px;flex:none;width:66px;height:66px;background:currentColor;position:relative;font-size:1px; }
+.understock-alerts .ua-kpi-icon::after { font-size:31px;position:absolute;color:#fff; }
+.understock-alerts .ua-kpi-danger .ua-kpi-icon::after { content:'!';font-weight:900; }
+.understock-alerts .ua-kpi-warning .ua-kpi-icon::after { content:'◷'; }
+.understock-alerts .ua-kpi-success .ua-kpi-icon::after { content:'✓'; }
+.understock-alerts .ua-kpi p { font-size:17px;color:var(--ua-ink);font-weight:650;margin-bottom:3px; }
+.understock-alerts .ua-kpi strong { font-size:37px;line-height:1.1;font-weight:800;color:var(--ua-ink);font-variant-numeric:tabular-nums; }
+.understock-alerts .ua-panel { background:var(--ua-surface); border:1px solid #e6ecf7; border-radius:19px;box-shadow:var(--ua-shadow);padding:25px 22px; }
+.understock-alerts .ua-panel-header { display:flex;gap:18px;align-items:center;justify-content:space-between; flex-wrap:wrap;margin-bottom:25px; }
+.understock-alerts .ua-panel-header h3 { font-size:23px;font-weight:760;letter-spacing:-.03em; }
+.understock-alerts .ua-panel-header p { color:var(--ua-muted);margin-top:6px;font-size:14px; }
+.understock-alerts .ua-filters { display:flex;flex-wrap:wrap;gap:9px; }
+.understock-alerts .ua-filter { background:#fff;border:1px solid #d9e2f1;color:#253352;padding:10px 12px;white-space:nowrap; }
+.understock-alerts .ua-filter:hover { background:#f1f5ff; }
+.understock-alerts .ua-filter.is-active {border-color:#296bff;background:#eff5ff;color:#184cc5;}
+.understock-alerts .ua-filter span { display:inline-grid;place-items:center;border-radius:30px;min-width:22px;height:22px;padding:1px 6px;font-size:12px;margin-left:7px;background:#edf1f7;color:#233652; }
+.understock-alerts .ua-filter.is-active span {background:#398eff;color:white;}
+.understock-alerts .ua-table-scroll {overflow:auto;border:1px solid #e3e9f3;border-radius:14px;}
+.understock-alerts .ua-table {width:100%;border-collapse:collapse;min-width:960px;background:white;font-size:14px; }
+.understock-alerts .ua-table thead {background:#f3f7fc;}
+.understock-alerts .ua-table th {color:#1a2d4d;text-align:left;font-size:12px;letter-spacing:.005em;font-weight:750;padding:18px 13px;white-space:nowrap; }
+.understock-alerts .ua-table td {padding:19px 13px;border-top:1px solid #edf1f6;color:#263550;vertical-align:middle;font-variant-numeric:tabular-nums;}
+.understock-alerts .ua-product {display:flex;gap:10px;align-items:center;min-width:120px;}
+.understock-alerts .ua-product-icon { width:36px;height:36px;display:grid;place-items:center;background:#e8f2ff;color:#397bdc;border-radius:10px;font-size:18px;flex:none; }
+.understock-alerts .ua-product-name {font-weight:730;}
+.understock-alerts .ua-pill {display:inline-flex;align-items:center;gap:5px;border-radius:9px;padding:8px 10px;font-weight:700;font-size:12px;white-space:nowrap;}
+.understock-alerts .ua-pill-danger {background:#ffe6e8;color:#b91e2c;}
+.understock-alerts .ua-pill-warning {background:#fff0d1;color:#a75d05;}
+.understock-alerts .ua-pill-success {background:#dff9ec;color:#0b814b;}
+.understock-alerts .ua-pill-neutral {background:#eef2f7;color:#546077;}
+.understock-alerts .ua-stock-zero {color:#c42134;font-weight:780;}
+.understock-alerts .ua-replace-number {font-weight:760;font-size:16px;}
+.understock-alerts .ua-btn-outline {border:1px solid #2f6dff;background:#fff;color:#1e55dc;padding:9px 12px;font-size:12px;white-space:nowrap;}
+.understock-alerts .ua-btn-outline:hover:not(:disabled){background:#edf4ff;}
+.understock-alerts .ua-message { min-height:24px;color:var(--ua-muted);font-size:13px;margin-top:16px; }
+.understock-alerts .ua-message.is-error {color:#b91c1c;font-weight:650;}
+.understock-alerts .ua-empty {text-align:center;color:#7a8597;padding:36px !important;}
+.understock-alerts .ua-footnote {color:#718098;font-size:12px;margin-top:12px;line-height:1.5;}
+.understock-alerts .ua-footnote code {font-family:Consolas,monospace;color:#4f6380;}
+.understock-alerts button:focus-visible,.ua-standalone a:focus-visible {outline:3px solid #86b2ff;outline-offset:3px;}
+
+/* Vista local de desarrollo: muestra el diseño completo sin depender del login SQL. */
+body.ua-standalone { margin:0; display:flex;min-height:100vh;background:#f3f7fd;color:#102242;font-family:Inter,"Segoe UI",system-ui,-apple-system,sans-serif; }
+.ua-standalone .ua-sidebar { width:258px;position:sticky;top:0;align-self:flex-start;min-height:100vh;display:flex;flex-direction:column;background:linear-gradient(175deg,#192e50,#0d1b37);padding:27px 16px;color:#e9f0ff; flex:none; }
+.ua-standalone .ua-logo { font-size:21px;font-weight:820;letter-spacing:-.035em;padding:7px 12px 48px;white-space:nowrap; }
+.ua-standalone .ua-logo-mark {color:#448dff;font-size:34px;vertical-align:middle;margin-right:5px;}
+.ua-standalone .ua-nav-label {font-size:10px;letter-spacing:.14em;color:#889cba;padding:0 12px 14px;}
+.ua-standalone .ua-side-link {display:flex;align-items:center;gap:10px;text-decoration:none;color:#c7d4ec;padding:14px 13px;border-radius:11px;font-weight:560;margin-bottom:7px;font-size:14px;}
+.ua-standalone .ua-side-link span {font-size:24px;line-height:1;}
+.ua-standalone .ua-side-link:hover {background:#2a4265;color:white;}
+.ua-standalone .ua-side-link.ua-active {background:linear-gradient(135deg,#438bff,#2457de);color:white;font-weight:700;}
+.ua-standalone .ua-nav-spacer {flex:1;}
+.ua-standalone .ua-side-note {border-top:1px solid #344763;padding:18px 12px 0;color:#9caccc;font-size:12px;line-height:1.5;}
+.ua-standalone .ua-shell {flex:1;min-width:0;}
+.ua-standalone .ua-topbar {height:76px;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:0 clamp(20px,3vw,48px);border-bottom:1px solid #e6ecf4;background:rgba(255,255,255,.86);}
+.ua-standalone .ua-search-label {border:1px solid #dce4f1;border-radius:11px;padding:11px 18px;color:#8a98ae;width:min(410px,60%);font-size:14px;}
+.ua-standalone .ua-search-label span {font-size:26px;vertical-align:-3px;margin-right:8px;}
+.ua-standalone .ua-user {font-weight:700;display:flex;align-items:center;gap:8px;color:#273d5b;font-size:13px;}
+.ua-standalone .ua-user-avatar {display:grid;place-items:center;background:#acd1ff;color:#fff;border-radius:50%;width:36px;height:36px;}
+.ua-standalone .ua-main {padding:24px clamp(12px,2vw,30px);}
+@media(max-width:1050px) {
+  .understock-alerts .ua-kpi{gap:12px;padding:15px;min-height:106px;}
+  .understock-alerts .ua-kpi-icon{width:48px;height:48px;border-radius:12px;}
+  .understock-alerts .ua-kpi strong{font-size:29px;}
+  .understock-alerts .ua-kpi p{font-size:14px;}
+}
+@media(max-width:760px) {
+  .understock-alerts{padding:13px;min-height:0;}
+  .understock-alerts .ua-title-icon{width:48px;height:48px;font-size:25px;}
+  .understock-alerts .ua-page-title{margin-bottom:19px;}
+  .understock-alerts .ua-heading-group h2{font-size:22px;}
+  .understock-alerts .ua-btn-primary{width:100%;}
+  .understock-alerts .ua-kpis{grid-template-columns:1fr;gap:11px;}
+  .understock-alerts .ua-kpi{min-height:84px;}
+  .understock-alerts .ua-panel{padding:16px 12px;}
+  .understock-alerts .ua-panel-header h3{font-size:20px;}
+  .ua-standalone .ua-sidebar{width:60px;padding:15px 6px;}
+  .ua-standalone .ua-logo{font-size:0;padding:8px 6px 28px;}
+  .ua-standalone .ua-logo-mark{font-size:29px;}
+  .ua-standalone .ua-side-link{font-size:0;justify-content:center;padding:12px 4px;}
+  .ua-standalone .ua-side-link span{font-size:23px;}
+  .ua-standalone .ua-nav-label,.ua-standalone .ua-side-note{display:none;}
+  .ua-standalone .ua-topbar{padding:0 16px;}
+  .ua-standalone .ua-user{font-size:0;}
+}

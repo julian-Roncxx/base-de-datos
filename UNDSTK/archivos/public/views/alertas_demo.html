@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UNDERSTOCK | Alertas Inteligentes</title>
+  <link rel="stylesheet" href="../css/alertas-ui.css">
+</head>
+<body class="ua-standalone">
+  <aside class="ua-sidebar">
+    <div class="ua-logo"><span class="ua-logo-mark">⬡</span> UNDERSTOCK</div>
+    <div class="ua-nav-label">GESTIÓN DE INVENTARIO</div>
+    <a class="ua-side-link ua-active" href="alertas_demo.html" aria-current="page"><span>🔔</span> Alertas Inteligentes</a>
+    <div class="ua-nav-spacer"></div>
+    <a class="ua-side-link" href="main.html"><span>⌂</span> Abrir UNDERSTOCK</a>
+    <p class="ua-side-note">Vista de desarrollo local. No publicar en internet.</p>
+  </aside>
+  <div class="ua-shell">
+    <header class="ua-topbar">
+      <div class="ua-search-label"><span>⌕</span> Monitoreo de inventario</div>
+      <div class="ua-user"><span class="ua-user-avatar">U</span> UNDERSTOCK</div>
+    </header>
+    <main class="ua-main">
+      <section id="alertas-page" class="understock-alerts" data-api="../alertas_local.php" aria-label="Centro de Alertas Inteligentes">
+        <div class="ua-page-title">
+          <div class="ua-heading-group">
+            <div class="ua-title-icon" aria-hidden="true">🔔</div>
+            <div><h2>Centro de Alertas Inteligentes</h2><p>Monitoreo de inventario con MongoDB <span class="ua-dot" aria-hidden="true"></span></p></div>
+          </div>
+          <button class="ua-btn ua-btn-primary" type="button" data-ua-sync><span aria-hidden="true">↻</span> Sincronizar inventario</button>
+        </div>
+        <div class="ua-kpis" aria-label="Resumen de alertas">
+          <div class="ua-kpi ua-kpi-danger"><span class="ua-kpi-icon" aria-hidden="true">!</span><div><p>Críticas</p><strong data-ua-critical>0</strong></div></div>
+          <div class="ua-kpi ua-kpi-warning"><span class="ua-kpi-icon" aria-hidden="true">◷</span><div><p>Pendientes</p><strong data-ua-pending>0</strong></div></div>
+          <div class="ua-kpi ua-kpi-success"><span class="ua-kpi-icon" aria-hidden="true">✓</span><div><p>Atendidas</p><strong data-ua-attended>0</strong></div></div>
+        </div>
+        <div class="ua-panel">
+          <div class="ua-panel-header">
+            <div><h3>Alertas de inventario</h3><p>Productos que requieren atención según sus niveles de stock.</p></div>
+            <div class="ua-filters" role="group" aria-label="Filtrar alertas">
+              <button type="button" class="ua-filter is-active" data-ua-filter="todas">Todas <span data-ua-all-count>0</span></button>
+              <button type="button" class="ua-filter" data-ua-filter="criticas">Críticas <span data-ua-critical-count>0</span></button>
+              <button type="button" class="ua-filter" data-ua-filter="pendientes">Pendientes <span data-ua-pending-count>0</span></button>
+            </div>
+          </div>
+          <div class="ua-table-scroll">
+            <table class="ua-table">
+              <thead><tr><th>Producto</th><th>Stock actual</th><th>Stock mínimo</th><th>Prioridad</th><th>Reposición sugerida</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody data-ua-rows><tr><td colspan="7" class="ua-empty">Cargando alertas…</td></tr></tbody>
+            </table>
+          </div>
+          <p class="ua-message" data-ua-message role="status" aria-live="polite"></p>
+          <p class="ua-footnote">Fuente: <code>understock.productos</code> en MongoDB. Esta vista no necesita MySQL. Las ventas del sistema SQL no actualizan esta copia automáticamente.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script defer src="../js/alertas-ui.js"></script>
+</body>
+</html>
