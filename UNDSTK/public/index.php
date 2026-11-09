@@ -60,14 +60,6 @@ use Middleware\AuthMiddleware;
 // NORMALIZAR URL
 // ==========================================
 
-// Ejemplo recibido:
-//
-// /base-de-datos/UNDSTK/public/api/products
-//
-// El Router solamente debe recibir:
-//
-// /api/products
-
 $parsedUrl = parse_url(
     $_SERVER['REQUEST_URI'],
     PHP_URL_PATH
@@ -340,6 +332,31 @@ $router->add(
         $controller->index();
     }
 );
+
+
+/*
+==========================================
+MONGODB - ALERTAS INTELIGENTES
+==========================================
+*/
+
+$router->add('GET', '/api/alerts', function () {
+    AuthMiddleware::verify();
+
+    (new \Controllers\InventoryAlertController())->index();
+});
+
+$router->add('POST', '/api/alerts/sync', function () {
+    AuthMiddleware::verify();
+
+    (new \Controllers\InventoryAlertController())->sincronizar();
+});
+
+$router->add('PATCH', '/api/alerts', function () {
+    AuthMiddleware::verify();
+
+    (new \Controllers\InventoryAlertController())->atender();
+});
 
 
 // ==========================================

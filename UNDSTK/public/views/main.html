@@ -36,6 +36,7 @@
     <nav class="menu">
       <a href="#" class="active" id="link-dashboard" onclick="showSection('dashboard')">🏠 Dashboard</a>
       <a href="#" id="link-inventario" onclick="showSection('inventario')">📦 Inventario</a>
+      <a href="#" id="link-alertas" onclick="showSection('alertas')">🔔 Alertas Inteligentes</a>
       <a href="#" id="link-ventas" onclick="showSection('ventas')">🧾 Ventas</a>
       <a href="#" id="link-proveedores" onclick="showSection('proveedores')">👥 Proveedores</a>
       <a href="#" id="link-finanzas" onclick="showSection('finanzas')">💰 Finanzas</a>
@@ -91,6 +92,42 @@
         <p>Cargando inventario...</p>
       </div>
     </section>
+
+
+<!-- CENTRO DE ALERTAS MONGODB -->
+<section id="alertas" class="panel">
+    <h2>Centro de Alertas Inteligentes</h2>
+
+    <p>
+        Monitoreo del inventario usando MongoDB.
+        Detecta productos agotados o con stock bajo.
+    </p>
+
+    <button onclick="sincronizarAlertas()">
+        🔄 Sincronizar inventario
+    </button>
+
+    <p id="alertas-estado"></p>
+
+    <table class="prov-table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Stock</th>
+                <th>Mínimo</th>
+                <th>Prioridad</th>
+                <th>Reposición sugerida</th>
+                <th>Estado</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody id="alertas-tabla">
+            <tr>
+                <td colspan="7">Sin datos cargados.</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
 
     <section id="ventas" class="panel">
       <h2>Punto de Venta (POS)</h2>
@@ -523,6 +560,7 @@
         if (sectionId === 'proveedores') { cargarProveedores(); }
         if (sectionId === 'finanzas') { cargarDatosFinancieros(); }
         if (sectionId === 'bd') { cargarBaseDatos(); }
+        if (sectionId === 'alertas') {sincronizarAlertas();}
     }
 
     // --- ACCIONES DE INVENTARIO ---
@@ -1221,6 +1259,123 @@ if (
         localStorage.clear(); 
         window.location.replace("login.html"); 
     }
+
+
+async function cargarAlertas() {
+    const tabla = document.getElementById('alertas-tabla');
+
+    try {
+        const respuesta = await fetch('../api/alerts', {
+            headers: {
+                'Authorization': token
+            }
+        });
+
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok || resultado.status !== 'SUCCESS') {
+            throw new Error(resultado.message || 'Error al consultar alertas');
+        }
+
+        tabla.replaceChildren();
+
+        if (resultado.data.length === 0) {
+            const fila = tabla.insertRow();
+            const celda = fila.insertCell();
+            celda.colSpan = 7;
+            celda.textContent = 'No hay alertas registradas.';
+            return;
+        }
+
+        resultado.data.forEach(alerta => {
+            const fila = tabla.insertRow();
+
+            const valores = [
+                alerta.producto,
+                alerta.stockActual,
+                alerta.stockMinimo,
+                alerta.prioridad,
+                alerta.cantidadSugerida,
+                alerta.estado
+            ];
+
+            valores.forEach(valor => {
+                const celda = fila.insertCell();
+                celda.textContent = String(valor);
+            });
+
+            const celdaAccion = fila.insertCell();
+
+            if (alerta.estado === 'pendiente') {
+                const boton = document.createElement('button');
+                boton.textContent = 'Atender';
+                boton.onclick = () => atenderAlerta(alerta.id);
+                celdaAccion.appendChild(boton);
+            } else {
+                celdaAccion.textContent = '—';
+            }
+        });
+    } catch (error) {
+        tabla.replaceChildren();
+        const fila = tabla.insertRow();
+        const celda = fila.insertCell();
+        celda.colSpan = 7;
+        celda.textContent = error.message;
+    }
+}
+
+async function sincronizarAlertas() {
+    const estado = document.getElementById('alertas-estado');
+    estado.textContent = 'Sincronizando inventario...';
+
+    try {
+        const respuesta = await fetch('../api/alerts/sync', {
+            method: 'POST',
+            headers: {
+                'Authorization': token
+            }
+        });
+
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok || resultado.status !== 'SUCCESS') {
+            throw new Error(resultado.message || 'Error al sincronizar');
+        }
+
+        estado.textContent =
+            'Sincronización completada. Nuevas: ' +
+            resultado.data.generadas +
+            ' | Resueltas: ' +
+            resultado.data.resueltas;
+
+        await cargarAlertas();
+    } catch (error) {
+        estado.textContent = 'Error: ' + error.message;
+    }
+}
+
+async function atenderAlerta(id) {
+    try {
+        const respuesta = await fetch('../api/alerts', {
+            method: 'PATCH',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: id })
+        });
+
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok || resultado.status !== 'SUCCESS') {
+            throw new Error(resultado.message || 'Error al atender alerta');
+        }
+
+        await cargarAlertas();
+    } catch (error) {
+        alert(error.message);
+    }
+}
 
   </script>
 </body>
