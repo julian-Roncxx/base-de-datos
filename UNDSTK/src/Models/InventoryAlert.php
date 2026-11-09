@@ -1,4 +1,3 @@
-
 <?php
 
 namespace Models;
@@ -16,58 +15,45 @@ class InventoryAlert
         $this->collection = MongoDatabase::alertas();
     }
 
-    public function listar()
+    public function listar(): array
     {
         $cursor = $this->collection->find(
-            [],
+            ['productoMongoId' => ['$exists' => true]],
             ['sort' => ['actualizadaEn' => -1]]
         );
 
-        $alertas = [];
-
+        $resultados = [];
         foreach ($cursor as $doc) {
-            $alertas[] = [
+            $resultados[] = [
                 'id' => (string) $doc['_id'],
-                'productoIdSQL' => (int) $doc['productoIdSQL'],
-                'producto' => (string) $doc['producto'],
-                'stockActual' => (int) $doc['stockActual'],
-                'stockMinimo' => (int) $doc['stockMinimo'],
-                'prioridad' => (string) $doc['prioridad'],
-                'cantidadSugerida' => (int) $doc['cantidadSugerida'],
-                'estado' => (string) $doc['estado']
+                'productoMongoId' => (string) ($doc['productoMongoId'] ?? ''),
+                'producto' => (string) ($doc['producto'] ?? 'Producto sin nombre'),
+                'stockActual' => (int) ($doc['stockActual'] ?? 0),
+                'stockMinimo' => (int) ($doc['stockMinimo'] ?? 0),
+                'prioridad' => (string) ($doc['prioridad'] ?? 'media'),
+                'cantidadSugerida' => (int) ($doc['cantidadSugerida'] ?? 0),
+                'estado' => (string) ($doc['estado'] ?? 'pendiente')
             ];
         }
-
-        return $alertas;
+        return $resultados;
     }
 
-    public function atender($id)
+    public function atender(string $id): bool
     {
         if (!preg_match('/^[a-f0-9]{24}$/i', $id)) {
             return false;
         }
 
         $fecha = new UTCDateTime();
-
         $resultado = $this->collection->updateOne(
+            ['_id' => new ObjectId($id), 'estado' => 'pendiente'],
             [
-                '_id' => new ObjectId($id),
-                'estado' => 'pendiente'
-            ],
-            [
-                '$set' => [
-                    'estado' => 'atendida',
-                    'actualizadaEn' => $fecha
-                ],
+                '$set' => ['estado' => 'atendida', 'actualizadaEn' => $fecha],
                 '$push' => [
-                    'historial' => [
-                        'accion' => 'alerta_atendida',
-                        'fecha' => $fecha
-                    ]
+                    'historial' => ['accion' => 'alerta_atendida', 'fecha' => $fecha]
                 ]
             ]
         );
-
         return $resultado->getModifiedCount() === 1;
     }
 }

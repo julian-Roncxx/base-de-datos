@@ -1,0 +1,4 @@
+vendor/
+.respaldo_alertas_*/
+probar_mongo.php
+probar_alertas.php

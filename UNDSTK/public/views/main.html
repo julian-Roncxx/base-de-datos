@@ -29,6 +29,7 @@
     .form-group label { display: block; margin-bottom: 5px; font-size: 0.9em; color: #555; }
     .form-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
   </style>
+  <link rel="stylesheet" href="../css/alertas-ui.css">
 </head>
 <body>
   <aside class="sidebar">
@@ -95,39 +96,46 @@
 
 
 <!-- CENTRO DE ALERTAS MONGODB -->
-<section id="alertas" class="panel">
-    <h2>Centro de Alertas Inteligentes</h2>
-
-    <p>
-        Monitoreo del inventario usando MongoDB.
-        Detecta productos agotados o con stock bajo.
-    </p>
-
-    <button onclick="sincronizarAlertas()">
-        🔄 Sincronizar inventario
+<section id="alertas" class="panel understock-alerts" data-api="../api/alerts" aria-label="Centro de Alertas Inteligentes">
+  <div class="ua-page-title">
+    <div class="ua-heading-group">
+      <div class="ua-title-icon" aria-hidden="true">🔔</div>
+      <div>
+        <h2>Centro de Alertas Inteligentes</h2>
+        <p>Monitoreo de inventario con MongoDB <span class="ua-dot" aria-hidden="true"></span></p>
+      </div>
+    </div>
+    <button class="ua-btn ua-btn-primary" type="button" data-ua-sync>
+      <span aria-hidden="true">↻</span> Sincronizar inventario
     </button>
+  </div>
 
-    <p id="alertas-estado"></p>
+  <div class="ua-kpis" aria-label="Resumen de alertas">
+    <div class="ua-kpi ua-kpi-danger"><span class="ua-kpi-icon" aria-hidden="true">!</span><div><p>Críticas</p><strong data-ua-critical>0</strong></div></div>
+    <div class="ua-kpi ua-kpi-warning"><span class="ua-kpi-icon" aria-hidden="true">◷</span><div><p>Pendientes</p><strong data-ua-pending>0</strong></div></div>
+    <div class="ua-kpi ua-kpi-success"><span class="ua-kpi-icon" aria-hidden="true">✓</span><div><p>Atendidas</p><strong data-ua-attended>0</strong></div></div>
+  </div>
 
-    <table class="prov-table">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Stock</th>
-                <th>Mínimo</th>
-                <th>Prioridad</th>
-                <th>Reposición sugerida</th>
-                <th>Estado</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody id="alertas-tabla">
-            <tr>
-                <td colspan="7">Sin datos cargados.</td>
-            </tr>
-        </tbody>
-    </table>
+  <div class="ua-panel">
+    <div class="ua-panel-header">
+      <div><h3>Alertas de inventario</h3><p>Productos que requieren atención según sus niveles de stock.</p></div>
+      <div class="ua-filters" role="group" aria-label="Filtrar alertas">
+        <button type="button" class="ua-filter is-active" data-ua-filter="todas">Todas <span data-ua-all-count>0</span></button>
+        <button type="button" class="ua-filter" data-ua-filter="criticas">Críticas <span data-ua-critical-count>0</span></button>
+        <button type="button" class="ua-filter" data-ua-filter="pendientes">Pendientes <span data-ua-pending-count>0</span></button>
+      </div>
+    </div>
+    <div class="ua-table-scroll">
+      <table class="ua-table">
+        <thead><tr><th>Producto</th><th>Stock actual</th><th>Stock mínimo</th><th>Prioridad</th><th>Reposición sugerida</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody data-ua-rows><tr><td colspan="7" class="ua-empty">Cargando alertas…</td></tr></tbody>
+      </table>
+    </div>
+    <p class="ua-message" data-ua-message role="status" aria-live="polite"></p>
+    <p class="ua-footnote">Fuente: colección <code>understock.productos</code> en MongoDB. Las ventas de MySQL no actualizan esta copia automáticamente.</p>
+  </div>
 </section>
+
 
     <section id="ventas" class="panel">
       <h2>Punto de Venta (POS)</h2>
@@ -1378,5 +1386,6 @@ async function atenderAlerta(id) {
 }
 
   </script>
+  <script defer src="../js/alertas-ui.js"></script>
 </body>
 </html>

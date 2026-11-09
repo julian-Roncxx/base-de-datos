@@ -1,99 +1,80 @@
-
 <?php
 
 namespace Services;
 
-use Config\Database;
 use Config\MongoDatabase;
 use MongoDB\BSON\UTCDateTime;
-use PDO;
 use Throwable;
 
 class InventoryAlertService
 {
-    public function sincronizar()
+    public function sincronizar(): array
     {
-        $mysql = Database::getInstance()->getConnection();
-        $mongo = MongoDatabase::alertas();
-
-        $mongo->createIndex(
-            ['productoIdSQL' => 1],
-            ['unique' => true]
-        );
-
-        $productos = $mysql->query("
-            SELECT id, nombre, cantidad, stockMinimo
-            FROM vw_inventario
-        ")->fetchAll(PDO::FETCH_ASSOC);
+        $productos = MongoDatabase::productos();
+        $alertas = MongoDatabase::alertas();
+        $alertas->createIndex(['productoMongoId' => 1], ['unique' => true]);
 
         $generadas = 0;
         $resueltas = 0;
+        $revisados = 0;
+        $omitidos = 0;
         $idsVigentes = [];
 
-        foreach ($productos as $producto) {
-            $id = (int) $producto['id'];
-            $stock = (int) $producto['cantidad'];
-            $minimo = (int) $producto['stockMinimo'];
+        foreach ($productos->find([]) as $producto) {
+            $revisados++;
+            $cantidad = $producto['cantidad'] ?? null;
+            $minimo = $producto['stockMinimo'] ?? $producto['stock_minimo'] ?? null;
 
+            if (!is_numeric($cantidad) || !is_numeric($minimo)) {
+                $omitidos++;
+                continue;
+            }
+
+            $id = (string) $producto['_id'];
             $idsVigentes[] = $id;
-
-            $anterior = $mongo->findOne([
-                'productoIdSQL' => $id
-            ]);
-
+            $nombre = (string) ($producto['nombre'] ?? 'Sin nombre');
+            $stock = (int) $cantidad;
+            $stockMinimo = (int) $minimo;
+            $anterior = $alertas->findOne(['productoMongoId' => $id]);
             $fecha = new UTCDateTime();
 
-            if ($stock <= $minimo) {
-                $prioridad = $stock === 0
-                    ? 'critica'
-                    : ($stock <= $minimo / 2 ? 'alta' : 'media');
-
+            if ($stock <= $stockMinimo) {
+                $prioridad = $stock <= 0 ? 'critica'
+                    : ($stock <= $stockMinimo / 2 ? 'alta' : 'media');
                 $datos = [
-                    'producto' => $producto['nombre'],
+                    'productoMongoId' => $id,
+                    'producto' => $nombre,
                     'stockActual' => $stock,
-                    'stockMinimo' => $minimo,
+                    'stockMinimo' => $stockMinimo,
                     'prioridad' => $prioridad,
-                    'cantidadSugerida' => max(1, $minimo * 2 - $stock),
+                    'cantidadSugerida' => max(1, $stockMinimo * 2 - $stock),
                     'actualizadaEn' => $fecha
                 ];
 
-                $estadoAnterior = $anterior['estado'] ?? null;
-
-                if ($anterior === null || $estadoAnterior === 'resuelta') {
+                if ($anterior === null || ($anterior['estado'] ?? '') === 'resuelta') {
                     $datos['estado'] = 'pendiente';
-                    $datos['creadaEn'] = $fecha;
-
-                    $mongo->updateOne(
-                        ['productoIdSQL' => $id],
+                    $alertas->updateOne(
+                        ['productoMongoId' => $id],
                         [
                             '$set' => $datos,
+                            '$setOnInsert' => ['creadaEn' => $fecha],
                             '$push' => [
-                                'historial' => [
-                                    'accion' => 'alerta_generada',
-                                    'fecha' => $fecha
-                                ]
+                                'historial' => ['accion' => 'alerta_generada', 'fecha' => $fecha]
                             ]
                         ],
                         ['upsert' => true]
                     );
-
                     $generadas++;
                 } else {
-                    $mongo->updateOne(
-                        ['productoIdSQL' => $id],
-                        ['$set' => $datos]
-                    );
+                    // Una alerta atendida no vuelve a "pendiente" si no ha habido reposicion.
+                    $alertas->updateOne(['productoMongoId' => $id], ['$set' => $datos]);
                 }
             } elseif (
                 $anterior !== null &&
-                in_array(
-                    $anterior['estado'],
-                    ['pendiente', 'atendida'],
-                    true
-                )
+                in_array(($anterior['estado'] ?? ''), ['pendiente', 'atendida'], true)
             ) {
-                $mongo->updateOne(
-                    ['productoIdSQL' => $id],
+                $alertas->updateOne(
+                    ['productoMongoId' => $id],
                     [
                         '$set' => [
                             'estado' => 'resuelta',
@@ -101,45 +82,41 @@ class InventoryAlertService
                             'actualizadaEn' => $fecha
                         ],
                         '$push' => [
-                            'historial' => [
-                                'accion' => 'stock_recuperado',
-                                'fecha' => $fecha
-                            ]
+                            'historial' => ['accion' => 'stock_recuperado', 'fecha' => $fecha]
                         ]
                     ]
                 );
-
                 $resueltas++;
             }
         }
 
-        // Resolver alertas de productos que ya no existen en SQL.
-        $mongo->updateMany(
+        // Cierra alertas de productos eliminados de la colección MongoDB.
+        $cerradas = $alertas->updateMany(
             [
-                'productoIdSQL' => ['$nin' => $idsVigentes],
+                'productoMongoId' => ['$exists' => true, '$nin' => $idsVigentes],
                 'estado' => ['$in' => ['pendiente', 'atendida']]
             ],
-            [
-                '$set' => [
-                    'estado' => 'resuelta',
-                    'motivoCierre' => 'Producto eliminado del inventario',
-                    'actualizadaEn' => new UTCDateTime()
-                ]
-            ]
+            ['$set' => [
+                'estado' => 'resuelta',
+                'motivoCierre' => 'Producto ausente del inventario MongoDB',
+                'actualizadaEn' => new UTCDateTime()
+            ]]
         );
+        $resueltas += $cerradas->getModifiedCount();
 
         return [
+            'productosRevisados' => $revisados,
+            'productosOmitidos' => $omitidos,
             'generadas' => $generadas,
             'resueltas' => $resueltas
         ];
     }
 
-    public static function intentarSincronizar()
+    public static function intentarSincronizar(): void
     {
         try {
             (new self())->sincronizar();
         } catch (Throwable $e) {
-            // Nunca cancelar una venta ya confirmada en MySQL.
             error_log('Error sincronizando alertas MongoDB: ' . $e->getMessage());
         }
     }
